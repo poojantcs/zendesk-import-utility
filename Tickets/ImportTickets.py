@@ -1,7 +1,8 @@
 import requests
+import threading
 
 host = "cloudsufi.zendesk.com"
-url = "https://" + host + "/api/v2/imports/tickets"
+url = "https://" + host + "/api/v2/imports/tickets?async=true"
 username = "poojan.trivedi@cloudsufi.com/token"
 password = "67Wp6CGTSZ5HQP679IDg3NwPihOV1qupDGLBusPD"
 
@@ -35,6 +36,18 @@ def getUniqueTicketBody(ticketprefix, ticketsuffix):
     return body
 
 
-for x in range(20, 1000):
-    response = requests.post(url, auth=(username, password), json=getUniqueTicketBody("TestTicketAAA{}", x))
-    print(response.text)
+def createtickets(ticketprefix, startingindex, endingindex):
+    for x in range(startingindex, endingindex):
+        requests.post(url, auth=(username, password), json=getUniqueTicketBody("TestTicket" + ticketprefix + "{}", x))
+
+
+t1 = threading.Thread(target=createtickets, args=("AAC", 1, 25000))
+t2 = threading.Thread(target=createtickets, args=("AAD", 1, 25000))
+
+t1.start()
+t2.start()
+
+t1.join()
+t2.join()
+
+print("Done!")
